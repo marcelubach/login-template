@@ -1,0 +1,54 @@
+/* User button (shown in groups list) */
+.btn_users {
+    max-width: 3em;
+    height: auto;
+    min-width: 3em;
+}
+
+/* Group list icon (shown in user button above) */
+.img_users {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Login icon (shown at top-left) */
+.img_login {
+    max-height: 100%;
+    width: 30px;
+}
+
+/* Dialog window image (shown after several events) */
+.img_dialog {
+    height: 60%;
+}
+
+.img_loader {
+    width: 60%;
+    max-width: 15em;
+}
+
+/******************************/
+/* Width breakpoint at 576px */
+/******************************/
+
+/* Adapts buttons width in the friends list */
+@media all and (min-width: 36em){
+.btn_users {
+    max-width: 100%;
+/*    height: auto; */
+}
+
+/**********************************************/
+/* Heigth breakpoint at 576px (for landscape) */
+/**********************************************/
+
+/* Adapts image in confirmation dialog (for landscape) */
+@media all and (min-width: 36em){
+.img_dialog {
+    height: 20%;
+}
+
+.img_loader {
+/*    height: 60%;*/
+    width: 20%;
+}

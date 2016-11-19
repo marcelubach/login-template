@@ -1,0 +1,23 @@
+<html>
+<head>
+ 	<meta charset="utf-8">
+    <title> Login template tester </title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+
+<body>
+ 	<div>
+		<h1> <b> Login template tester </b> 
+		</h1>
+	</div>
+	<div>
+		<a href="http://localhost:8006/datastore?kind=User" target="_blank">Datastore local</a><br/>
+		<a href="https://console.cloud.google.com/datastore/entities/query?project=login-template-server&ns=&kind=Users" target="_blank">Datastore online</a><br/>
+		<a href="../apply?username=test1&password=t&alias=test1&icon=user1.png" target="_blank">Add user account</a><br/>
+        <a href="../login?username=test1&password=t" target="_blank">Check login</a><br/>
+        <a href="../changeprofile?username=test1&alias=test1(modified)" target="_blank">Modify account</a><br/>
+        <a href="../changepassword?username=test1&password=t" target="_blank">Change password</a><br/>
+        <a href="../resetpassword?username=test1" target="_blank">Reset password</a><br/>
+	</div>
+</body>
+</html>
