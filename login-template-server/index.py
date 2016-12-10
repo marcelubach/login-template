@@ -10,7 +10,7 @@ from google.appengine.api import users
 from google.appengine.ext import ndb
 from google.appengine.ext.ndb.key import Key
 
-from utils import Utils
+import utils
 from encrypt import Credentials
 
 # Usage:
@@ -35,14 +35,14 @@ class User(ndb.Model):
 
 class MainPage(webapp2.RequestHandler):
 
-     def get(self):
-      html = '<html><head><title>Login template server</title></head>'
-      html += '<body><div><h1> <b>LOGIN TEMPLATE SERVER</b></h1></div>'
-      html += '<p>This is the server for the <a href="http://login-template.appspot.com">login template</a></p>'
-      html += '<p>You may find information about it in the <a href="http://eixerits.wordpress.com">Eixerits blog</a></p>'
-      html += '<p>You can test its services in the <a href="./html/test.html">Test page</a></p>'
-      html += '</body></html>'
-      self.response.write(html)
+  def get(self):
+    html = '<html><head><title>Login template server</title></head>'
+    html += '<body><div><h1> <b>LOGIN TEMPLATE SERVER</b></h1></div>'
+    html += '<p>This is the server for the <a href="http://login-template.appspot.com">login template</a></p>'
+    html += '<p>You may find information about it in the <a href="http://eixerits.wordpress.com">Eixerits blog</a></p>'
+    html += '<p>You can test its services in the <a href="./html/test.html">Test page</a></p>'
+    html += '</body></html>'
+    self.response.write(html)
 
 
 class LoginHandler(webapp2.RequestHandler):
@@ -69,13 +69,13 @@ class LoginHandler(webapp2.RequestHandler):
           status = 502
           json_query_data = 'Invalid username or password' # no hints to hackers
         else:
-          json_query_data = Utils().json_formatter(results)
+          json_query_data = utils.json_formatter(results)
       else:
         status = 502
         json_query_data = 'Invalid username or password' # no hints to hackers
         time.sleep(3) # hackers can wait...
 
-    Utils().write_output(self, json_query_data, status)
+    utils.write_output(self, json_query_data, status)
 
 
 class ApplyHandler(webapp2.RequestHandler):
@@ -98,7 +98,7 @@ class ApplyHandler(webapp2.RequestHandler):
       status = 502
       json_query_data = 'Missing alias, username or password'
     else:
-      if Utils().exists(User, [['username', acct]]):
+      if utils.exists(User, [['username', acct]]):
         status = 503
         json_query_data = 'Already existing account'
       else:
@@ -114,7 +114,7 @@ class ApplyHandler(webapp2.RequestHandler):
         pkey = newuser.put()
         json_query_data = str(pkey.id())
         
-    Utils().write_output(self, json_query_data, status)
+    utils.write_output(self, json_query_data, status)
 
 
 class ChangeProfileHandler(webapp2.RequestHandler):
@@ -149,7 +149,7 @@ class ChangeProfileHandler(webapp2.RequestHandler):
         user.icon = icon
         pkey = user.put()
         json_query_data = str(pkey.id());
-    Utils().write_output(self, json_query_data, status)
+    utils.write_output(self, json_query_data, status)
 
 
 class ChangePasswordHandler(webapp2.RequestHandler):
@@ -180,7 +180,7 @@ class ChangePasswordHandler(webapp2.RequestHandler):
         user.password = c
         pkey = user.put()
         json_query_data = str(pkey.id());
-    Utils().write_output(self, json_query_data, status)
+    utils.write_output(self, json_query_data, status)
 
 
 class ResetPasswordHandler(webapp2.RequestHandler):
@@ -211,7 +211,7 @@ class ResetPasswordHandler(webapp2.RequestHandler):
         json_query_data = 'Account without email. Password cannot be reset'
         status = 508
     if status == SUCCESS:
-      pw = Utils().id_generator(PASSWORD_DEFAULT_LENGTH)
+      pw = utils.id_generator(PASSWORD_DEFAULT_LENGTH)
       c = Credentials()
       c.set_dk(pw)
       user.password = c
@@ -219,17 +219,39 @@ class ResetPasswordHandler(webapp2.RequestHandler):
       json_query_data = str(pkey.id())
       subject = """Dear %s:
 
-Your password has been changed.  The new password is %s
+Your password has been reset.  The new password is %s
 
 If you did not request for this change, please take into account someone else has accessed to your account.
 
 eixerIT
-""" % (acct, pw)
-      ret = Utils().send_email(mailto, "Password reset", subject)
-      if ret == None :
+      """ % (acct, pw)
+      (ret, status) = utils.send_email(mailto, "Password reset", subject)
+      if status != SUCCESS :
         json_query_data = ret
-        status = 509
-    Utils().write_output(self, json_query_data, status)
+#        status = 509
+    utils.write_output(self, json_query_data, status)
+
+
+class SendMailHandler(webapp2.RequestHandler):
+  """Send an email. Actually this service is not used directly 
+  but we publish it as a convenience for testing purposes
+  """
+
+  def get(self):
+    self.post()
+
+  def post(self):
+    json_query_data = ''
+    status = SUCCESS
+    mailto = self.request.get('to')
+    mailsubject = self.request.get('subject')
+    mailbody = self.request.get('body')
+    if mailto == '' or mailsubject == '':
+      json_query_data = 'Missing adress or subject'
+      status = 510
+    else:
+      (status, json_query_data) = utils.send_email(mailto, mailsubject, mailbody)
+    utils.write_output(self, json_query_data, status)
 
 
 application = webapp2.WSGIApplication([
@@ -239,4 +261,5 @@ application = webapp2.WSGIApplication([
     ('/changeprofile', ChangeProfileHandler),
     ('/changepassword', ChangePasswordHandler),
     ('/resetpassword', ResetPasswordHandler),
+    ('/sendemail', SendMailHandler),
 ], debug=True)
