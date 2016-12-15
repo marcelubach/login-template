@@ -27,7 +27,7 @@ class MailSender(object):
         Implements a default behaviour for each method except for the 'send' 
         which must be explicitly implemented in each subclass"""
 
-    def send(self, mailto, mailsubject, mailbody):
+    def send(self, mailto, mailsubject, mailbody, ishtml=False):
         raise NotImplementedError('Abstract method send cannot be called directly')
 
     def getCurrentPeriod(self):
@@ -87,13 +87,16 @@ class MailSender(object):
 class MailSenderAppEngine(MailSender):
     ''' Sends mails using AppEngine. This implementation is always available'''
 
-    def send(self, mailto, mailsubject, mailbody):
-        return (SUCCESS, "Send mail with AppEngine: " + mailbody)
+    def send(self, mailto, mailsubject, mailbody, ishtml):
+        # return (SUCCESS, "Send mail with AppEngine: " + mailbody)
         sender_address = SENDER_ADDRESS
         message = mail.EmailMessage(
           sender = sender_address,
           subject = mailsubject)
         message.to = mailto
-        message.body = mailbody
+        if ishtml:
+            message.html = mailbody
+        else:
+            message.body = mailbody
         message.send()
         return (SUCCESS, "Send mail with AppEngine: " + mailbody)

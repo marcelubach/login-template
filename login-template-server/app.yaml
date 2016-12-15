@@ -7,6 +7,7 @@ threadsafe: true
 handlers:
 - url: /html
   static_dir: html
+  application_readable: true
 
 - url: .*
   script: index.application

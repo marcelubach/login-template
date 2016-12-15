@@ -214,21 +214,19 @@ class ResetPasswordHandler(webapp2.RequestHandler):
       pw = utils.id_generator(PASSWORD_DEFAULT_LENGTH)
       c = Credentials()
       c.set_dk(pw)
+      name = user.name
       user.password = c
       pkey = user.put()
       json_query_data = str(pkey.id())
-      subject = """Dear %s:
+      with open('html/mail_reset.html', 'r') as myfile:
+        subject=myfile.read().replace('\n', '')
+      logging.info(subject)
+      subject = subject.format(name, acct, pw)
+      logging.info(subject)
 
-Your password has been reset.  The new password is %s
-
-If you did not request for this change, please take into account someone else has accessed to your account.
-
-eixerIT
-      """ % (acct, pw)
-      (ret, status) = utils.send_email(mailto, "Password reset", subject)
+      (ret, status) = utils.send_email(mailto, "Password reset", subject, True)
       if status != SUCCESS :
         json_query_data = ret
-#        status = 509
     utils.write_output(self, json_query_data, status)
 
 

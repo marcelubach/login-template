@@ -1,23 +1,8 @@
 import json
 import string
 import random
-# import imp
-# import os
 
 import logging
-# import plugins
-
-# from google.appengine.api import app_identity
-# from google.appengine.api import mail
-
-#from google.appengine.ext import ndb
-
-# from mail import MailSender
-# from mail import MailSenderAppEngine
-# from mail import MailSenderSendGrid
-
-# import sendgrid
-#from sendgrid.helpers import mail
 
 """ Utils.
 """
@@ -76,74 +61,17 @@ def write_output(page, json_query_data, status):
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
   return ''.join(random.choice(chars) for _ in range(size))
 
-def send_email(mailto, mailsubject, mailbody):
+def send_email(mailto, mailsubject, mailbody, ishtml=False):
   from mail import MailSender
   (status, outvalue) = MailSender().checkValidEmail(mailto, mailsubject, mailbody)
   if (status != SUCCESS):
     return (status, outvalue)
-  # plugins.load()
-  # sender_list = sorted([cls() for cls in MailSender.__subclasses__()], key=lambda x: x.getPriority())
   sender_list = MailSender().getImplementations()
   for sender in sender_list:
     if (sender.hasAvailableQuota()):
-      (status, outvalue) = sender.send(mailto, mailsubject, mailbody)
+      (status, outvalue) = sender.send(mailto, mailsubject, mailbody, ishtml)
       if (status == SUCCESS):
         sender.incrementNumMailsSent()
         return (status, outvalue)
 
   return (512, "No sender was able to send the email")
-
-  # outvalue = ""
-  # status = SUCCESS
-
-#   senderBase = MailSender()
-#   (status, outvalue) = senderBase.checkValidEmail(mailto, mailsubject, mailbody)
-#   if (status != SUCCESS):
-#     return (outvalue, status)
-
-#   senderAppEngine = MailSenderAppEngine()
-#   senderSendGrid = MailSenderSendGrid()
-#   if (senderSendGrid.hasAvailableQuota()):
-#     logging.info(senderSendGrid.getNumMailsSent())
-#     logging.info(senderSendGrid.send(mailto, mailsubject, mailbody))
-#     logging.info(senderSendGrid.incrementNumMailsSent())
-#     logging.info(senderSendGrid.getNumMailsSent())
-#   else:
-#     logging.info(senderAppEngine.getNumMailsSent())
-#     logging.info(senderAppEngine.send(mailto, mailsubject, mailbody))
-#     logging.info(senderAppEngine.incrementNumMailsSent())
-#     logging.info(senderAppEngine.getNumMailsSent())
-#   return (outvalue, status)
-
-
-#   sender_address = SENDER_ADDRESS
-#   message = mail.EmailMessage(
-#       sender = sender_address,
-#       subject = mailsubject)
-
-#   if not mail.is_email_valid(mailto):
-#     outvalue = "Email Address for TO Address is Invalid"
-#   if outvalue == "":
-#     message.to = mailto
-#     if len(mailbody) == 0 or len(mailsubject) > 0:
-#       outvalue = "Subject or Body was left Empty"
-#   if outvalue == "":
-#       message.body = mailbody
-#   try:
-#     if USE_SENDGRID:
-#       response = send_email_sendgrid(mailto, mailsubject, mailbody)
-#       status = response.status_code
-#       outvalue = response.body
-#     message.send()
-#   except Exception, message:
-#     status = 509
-#     outvalue = str(message)
-#   return (outvalue, status)
-
-# def send_email_sendgrid(mailto, mailsubject, mailbody):
-#   sg = sendgrid.SendGridAPIClient(apikey=SENDGRID_API_KEY)
-#   to_email = sendgrid.helpers.mail.Email(mailto)
-#   from_email = sendgrid.helpers.mail.Email(SENDER_ADDRESS)
-#   content = sendgrid.helpers.mail.Content('text/plain', mailbody)
-#   message = sendgrid.helpers.mail.Mail(from_email, mailsubject, to_email, content)
-#   return sg.client.mail.send.post(request_body=message.get())
